@@ -4,6 +4,14 @@
 
 An end-to-end analytics engineering project that turns raw NYC Yellow Taxi trip data into a tested analytical warehouse and an interactive business dashboard.
 
+## 🚀 View the Dashboard
+
+### [Open the standalone HTML dashboard](https://htmlpreview.github.io/?https://github.com/Avantika1120/NYC-Taxi-Analytics-dbt-Python-SQL/blob/main/dashboard/index.html)
+
+The standalone HTML dashboard is designed for quick portfolio/recruiter review and includes KPI cards, revenue trends, zone performance, demand-by-hour analysis, airport-vs-non-airport economics, key business insights, and a visual architecture/dbt-lineage section.
+
+> The HTML page uses representative portfolio values so it can be opened instantly in a browser. The Python + dbt pipeline in this repository computes the real warehouse-backed metrics, and the Streamlit application reads from those modeled tables for live analysis.
+
 ## What this project demonstrates
 
 - Automated public-data ingestion with **Python**
@@ -14,6 +22,7 @@ An end-to-end analytics engineering project that turns raw NYC Yellow Taxi trip 
 - Data quality tests and source freshness assumptions
 - Business analysis with SQL
 - Interactive **Streamlit + Plotly** dashboard
+- Standalone **HTML portfolio dashboard**
 - GitHub Actions CI for reproducible dbt builds
 - Architecture, lineage, and business case-study documentation
 
@@ -77,6 +86,7 @@ analysis/
 
 dashboard/
   app.py
+  index.html
 
 docs/
   ARCHITECTURE.md
@@ -123,6 +133,12 @@ The default configuration downloads **January 2024 Yellow Taxi data** plus the o
 - `mart_hourly_demand` — weekday/hour demand profile
 
 ## Dashboard
+
+### Standalone HTML portfolio dashboard
+
+[Open HTML dashboard](https://htmlpreview.github.io/?https://github.com/Avantika1120/NYC-Taxi-Analytics-dbt-Python-SQL/blob/main/dashboard/index.html)
+
+### Warehouse-backed Streamlit dashboard
 
 Run:
 
@@ -175,7 +191,7 @@ dbt docs serve --profiles-dir .
 
 **Python:** pandas, requests, DuckDB  
 **SQL / Analytics Engineering:** dbt-core, dbt-duckdb  
-**Dashboard:** Streamlit, Plotly  
+**Dashboard:** Streamlit, Plotly, HTML/CSS/JavaScript, Chart.js  
 **DevOps:** GitHub Actions
 
 ## Why DuckDB?
