@@ -11,8 +11,8 @@ enriched as (
         t.*,
         pu.borough as pickup_borough,
         pu.zone as pickup_zone,
-        do.borough as dropoff_borough,
-        do.zone as dropoff_zone,
+        dz.borough as dropoff_borough,
+        dz.zone as dropoff_zone,
         date_diff('minute', pickup_datetime, dropoff_datetime) as trip_duration_minutes,
         case
             when date_diff('minute', pickup_datetime, dropoff_datetime) > 0
@@ -32,7 +32,7 @@ enriched as (
         end as daypart,
         case
             when lower(coalesce(pu.zone, '')) like '%airport%'
-              or lower(coalesce(do.zone, '')) like '%airport%'
+              or lower(coalesce(dz.zone, '')) like '%airport%'
               or airport_fee > 0
             then true else false
         end as is_airport_trip,
@@ -44,7 +44,7 @@ enriched as (
         end as trip_quality_flag
     from trips t
     left join zones pu on t.pickup_location_id = pu.location_id
-    left join zones do on t.dropoff_location_id = do.location_id
+    left join zones dz on t.dropoff_location_id = dz.location_id
 )
 
 select * from enriched
