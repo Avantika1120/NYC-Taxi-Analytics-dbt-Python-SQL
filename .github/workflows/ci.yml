@@ -1,0 +1,36 @@
+name: Analytics Engineering CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  dbt-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create deterministic CI fixture
+        run: python tests/create_ci_fixture.py
+
+      - name: Load raw DuckDB tables
+        run: python ingestion/load_raw.py
+
+      - name: Validate dbt connection
+        run: cd dbt_taxi && dbt debug --profiles-dir .
+
+      - name: Build and test dbt project
+        run: cd dbt_taxi && dbt build --profiles-dir .
+
+      - name: Generate dbt documentation
+        run: cd dbt_taxi && dbt docs generate --profiles-dir .
+
+      - name: Run analytical validation
+        run: python analysis/eda.py
