@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+
+# Local data + warehouse
+data/*.parquet
+data/*.csv
+warehouse/*.duckdb
+warehouse/*.wal
+
+# dbt artifacts
+dbt_taxi/target/
+dbt_taxi/logs/
+dbt_taxi/dbt_packages/
+
+# Streamlit
+.streamlit/secrets.toml
