@@ -4,4 +4,4 @@ nyc_taxi_analytics:
     dev:
       type: duckdb
       path: ../warehouse/nyc_taxi.duckdb
-      threads: 4
+      threads: 1
