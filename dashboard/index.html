@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NYC Taxi Analytics Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:#0b1020;
+      --panel:#121a2f;
+      --panel-2:#18223b;
+      --text:#eef2ff;
+      --muted:#9aa6c4;
+      --accent:#7dd3fc;
+      --accent2:#c4b5fd;
+      --good:#86efac;
+      --warn:#fde68a;
+      --line:#273451;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      background: radial-gradient(circle at top right, #172554 0, var(--bg) 38%);
+      color:var(--text);
+    }
+    .wrap { max-width:1380px; margin:0 auto; padding:28px; }
+    .hero {
+      display:flex; justify-content:space-between; align-items:flex-start; gap:24px;
+      margin-bottom:24px;
+    }
+    h1 { margin:0 0 8px; font-size:34px; letter-spacing:-0.8px; }
+    .subtitle { color:var(--muted); max-width:850px; line-height:1.6; }
+    .tag {
+      border:1px solid #33466f; background:#12213c; color:#cbd5e1;
+      padding:8px 12px; border-radius:999px; font-size:12px; white-space:nowrap;
+    }
+    .grid { display:grid; gap:16px; }
+    .kpis { grid-template-columns:repeat(5,1fr); margin-bottom:16px; }
+    .two { grid-template-columns:1.25fr 1fr; margin-bottom:16px; }
+    .three { grid-template-columns:1fr 1fr 1fr; margin-bottom:16px; }
+    .card {
+      background:linear-gradient(180deg, rgba(24,34,59,.96), rgba(18,26,47,.96));
+      border:1px solid var(--line); border-radius:18px; padding:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.18);
+    }
+    .kpi .label { color:var(--muted); font-size:12px; margin-bottom:8px; }
+    .kpi .value { font-size:28px; font-weight:750; letter-spacing:-.5px; }
+    .kpi .delta { font-size:12px; color:var(--good); margin-top:6px; }
+    .section-title { margin:0 0 4px; font-size:16px; }
+    .section-sub { margin:0 0 14px; color:var(--muted); font-size:12px; }
+    canvas { width:100% !important; max-height:310px; }
+    .insights { display:grid; gap:10px; }
+    .insight {
+      padding:12px; border:1px solid #30405f; border-radius:12px; background:#0f172a;
+    }
+    .insight b { display:block; margin-bottom:5px; }
+    .insight span { color:var(--muted); font-size:13px; line-height:1.45; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th, td { padding:10px 8px; border-bottom:1px solid var(--line); text-align:right; }
+    th:first-child, td:first-child { text-align:left; }
+    th { color:#cbd5e1; font-weight:600; }
+    td { color:#dbe4f3; }
+    .footer {
+      color:var(--muted); font-size:12px; line-height:1.6; margin-top:8px; padding-bottom:20px;
+    }
+    .pillrow { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+    .pill { background:#18223b; border:1px solid #33466f; border-radius:999px; padding:6px 10px; color:#cbd5e1; font-size:12px; }
+    .arch { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color:#cbd5e1; line-height:1.75; font-size:12px; white-space:pre-wrap; }
+    @media (max-width:1000px) {
+      .kpis{grid-template-columns:repeat(2,1fr)} .two,.three{grid-template-columns:1fr}
+      .hero{flex-direction:column}
+    }
+    @media (max-width:600px) { .wrap{padding:16px}.kpis{grid-template-columns:1fr} h1{font-size:28px} }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <h1>NYC Taxi Analytics Dashboard</h1>
+      <div class="subtitle">A recruiter-facing demo of an end-to-end analytics engineering pipeline built with Python, SQL, dbt, DuckDB, and Streamlit. The dashboard mirrors the same business questions modeled in the dbt marts.</div>
+      <div class="pillrow">
+        <span class="pill">Python</span><span class="pill">SQL</span><span class="pill">dbt</span><span class="pill">DuckDB</span><span class="pill">Data Quality</span><span class="pill">Analytics Engineering</span>
+      </div>
+    </div>
+    <div class="tag">Portfolio Demo • Representative Snapshot</div>
+  </div>
+
+  <div class="grid kpis">
+    <div class="card kpi"><div class="label">TOTAL TRIPS</div><div class="value">3.02M</div><div class="delta">↑ 6.8% vs prior month</div></div>
+    <div class="card kpi"><div class="label">TOTAL REVENUE</div><div class="value">$86.4M</div><div class="delta">↑ 7.4% vs prior month</div></div>
+    <div class="card kpi"><div class="label">AVG TRIP VALUE</div><div class="value">$28.61</div><div class="delta">↑ 0.6%</div></div>
+    <div class="card kpi"><div class="label">AVG TIP RATE</div><div class="value">15.8%</div><div class="delta">↑ 0.9 pts</div></div>
+    <div class="card kpi"><div class="label">AIRPORT SHARE</div><div class="value">8.7%</div><div class="delta">Higher revenue / trip</div></div>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <h3 class="section-title">Daily Revenue Trend</h3>
+      <p class="section-sub">Executive view from the daily KPI mart</p>
+      <canvas id="revenueChart"></canvas>
+    </div>
+    <div class="card">
+      <h3 class="section-title">Top Pickup Zones by Revenue</h3>
+      <p class="section-sub">Zone-level performance mart</p>
+      <canvas id="zoneChart"></canvas>
+    </div>
+  </div>
+
+  <div class="grid three">
+    <div class="card">
+      <h3 class="section-title">Demand by Hour</h3>
+      <p class="section-sub">Hourly demand pattern</p>
+      <canvas id="hourChart"></canvas>
+    </div>
+    <div class="card">
+      <h3 class="section-title">Airport vs Non-Airport</h3>
+      <p class="section-sub">Average trip economics</p>
+      <canvas id="airportChart"></canvas>
+    </div>
+    <div class="card">
+      <h3 class="section-title">Key Business Insights</h3>
+      <p class="section-sub">What a recruiter/interviewer should notice</p>
+      <div class="insights">
+        <div class="insight"><b>Peak demand is concentrated</b><span>Late afternoon and evening windows drive the highest trip volume, supporting targeted driver-allocation decisions.</span></div>
+        <div class="insight"><b>Airport trips are economically different</b><span>Airport rides have a materially higher average ticket and should be analyzed separately from standard city trips.</span></div>
+        <div class="insight"><b>Revenue is geographically concentrated</b><span>A relatively small set of Manhattan and airport-adjacent zones contribute a disproportionate share of trip revenue.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <h3 class="section-title">Zone Efficiency Table</h3>
+      <p class="section-sub">Representative output aligned to mart_zone_performance</p>
+      <table>
+        <thead><tr><th>Pickup Zone</th><th>Trips</th><th>Revenue</th><th>Revenue / Mile</th><th>Tip Rate</th></tr></thead>
+        <tbody>
+          <tr><td>Midtown Center</td><td>182,441</td><td>$5.8M</td><td>$8.72</td><td>17.2%</td></tr>
+          <tr><td>Upper East Side South</td><td>164,922</td><td>$4.9M</td><td>$8.31</td><td>16.8%</td></tr>
+          <tr><td>Times Sq / Theatre District</td><td>151,305</td><td>$4.7M</td><td>$8.45</td><td>18.1%</td></tr>
+          <tr><td>JFK Airport</td><td>118,709</td><td>$7.3M</td><td>$5.62</td><td>14.3%</td></tr>
+          <tr><td>LaGuardia Airport</td><td>103,515</td><td>$4.8M</td><td>$6.01</td><td>13.9%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3 class="section-title">Architecture & dbt Lineage</h3>
+      <p class="section-sub">How raw public data becomes decision-ready analytics</p>
+      <div class="arch">NYC TLC Parquet + Zone Lookup
+        ↓
+Python ingestion / validation
+        ↓
+DuckDB raw schema
+        ↓
+dbt staging
+  ├─ stg_yellow_trips
+  └─ stg_taxi_zones
+        ↓
+dbt intermediate
+  └─ int_trips_enriched
+        ↓
+Fact + Dimension + Marts
+  ├─ fct_trips (incremental)
+  ├─ dim_zones
+  ├─ mart_daily_kpis
+  ├─ mart_zone_performance
+  └─ mart_hourly_demand
+        ↓
+SQL analysis + Dashboard</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <b>Note:</b> This standalone HTML page is a visual portfolio demo with representative values so it can be opened directly from GitHub. The repository's Python + dbt pipeline computes the real warehouse-backed metrics, and the Streamlit app reads from those modeled tables for live analysis.
+  </div>
+</div>
+<script>
+const base = {
+  responsive:true,
+  maintainAspectRatio:false,
+  plugins:{legend:{labels:{color:'#cbd5e1'}}, tooltip:{mode:'index',intersect:false}},
+  scales:{x:{ticks:{color:'#9aa6c4'},grid:{color:'rgba(71,85,105,.18)'}},y:{ticks:{color:'#9aa6c4'},grid:{color:'rgba(71,85,105,.18)'}}}
+};
+new Chart(document.getElementById('revenueChart'), {
+  type:'line',
+  data:{labels:['Jan 1','Jan 5','Jan 9','Jan 13','Jan 17','Jan 21','Jan 25','Jan 29'],datasets:[{label:'Revenue ($M)',data:[2.3,2.5,2.8,2.6,3.0,2.9,3.2,3.1],borderColor:'#7dd3fc',backgroundColor:'rgba(125,211,252,.15)',fill:true,tension:.35}]},
+  options:base
+});
+new Chart(document.getElementById('zoneChart'), {
+  type:'bar',
+  data:{labels:['JFK','Midtown','UES South','Times Sq','LaGuardia'],datasets:[{label:'Revenue ($M)',data:[7.3,5.8,4.9,4.7,4.8],backgroundColor:['#c4b5fd','#7dd3fc','#7dd3fc','#7dd3fc','#c4b5fd']}]},
+  options:{...base,indexAxis:'y'}
+});
+new Chart(document.getElementById('hourChart'), {
+  type:'bar',
+  data:{labels:['6','8','10','12','14','16','18','20','22','0'],datasets:[{label:'Trips (000s)',data:[42,88,96,102,112,138,166,149,121,74],backgroundColor:'#7dd3fc'}]},
+  options:base
+});
+new Chart(document.getElementById('airportChart'), {
+  type:'bar',
+  data:{labels:['Avg Trip Value','Avg Distance','Avg Tip Rate'],datasets:[{label:'Airport',data:[58.4,16.8,14.1],backgroundColor:'#c4b5fd'},{label:'Non-Airport',data:[25.9,3.4,16.0],backgroundColor:'#7dd3fc'}]},
+  options:base
+});
+</script>
+</body>
+</html>
